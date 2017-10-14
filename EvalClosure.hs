@@ -1,23 +1,26 @@
 module EvalClosure where
 
 import LambdaCalc
+
 import Data.Maybe
+import Data.Map (Map)
+import qualified Data.Map as Map
 
 data Value variable =
     VConst Const
   | VClosure variable (Environment variable -> Value variable) (Environment variable)
-type Environment variable = [(variable, Value variable)]
+type Environment variable = Map variable (Value variable)
 
 emptyEnv :: Environment variable
-emptyEnv = []
+emptyEnv = Map.empty
 
-lookupEnv :: (Eq variable) => variable -> Environment variable -> Value variable
-lookupEnv var env = fromJust $ lookup var env
+lookupEnv :: (Ord variable) => variable -> Environment variable -> Value variable
+lookupEnv var env = env Map.! var
 
-extendEnv :: variable -> Value variable -> Environment variable -> Environment variable
-extendEnv var exp env = (var, exp) : env
+extendEnv :: (Ord variable) => variable -> Value variable -> Environment variable -> Environment variable
+extendEnv var value env = Map.insert var value env
 
-evalExp :: (Eq variable) => Exp variable -> Environment variable -> Value variable
+evalExp :: (Ord variable) => Exp variable -> Environment variable -> Value variable
 evalExp exp =
   case exp of
     EConst c -> const $ VConst c
