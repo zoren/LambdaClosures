@@ -20,6 +20,10 @@ lookupEnv var env = env Map.! var
 extendEnv :: (Ord variable) => variable -> Value variable -> Environment variable -> Environment variable
 extendEnv var value env = Map.insert var value env
 
+applyFunc :: (Ord v) => Value v -> Value v -> Value v
+applyFunc (VClosure v cBody cloEnv) arg = cBody (extendEnv v arg cloEnv)
+applyFunc _ _ = error "applying non-closure"
+
 evalExp :: (Ord variable) => Exp variable -> Environment variable -> Value variable
 evalExp exp =
   case exp of
@@ -30,8 +34,4 @@ evalExp exp =
       \env -> VClosure var cBody env
     EApply e1 e2 ->
       let (c1, c2) = (evalExp e1, evalExp e2)
-      in \env ->
-           case c1 env of
-             VClosure v cBody cloEnv -> cBody (extendEnv v (c2 env) cloEnv)
-             _ -> error "applying non-closure"
-
+      in \env -> applyFunc (c1 env) (c2 env)
