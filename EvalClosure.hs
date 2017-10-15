@@ -8,7 +8,7 @@ import qualified Data.Map as Map
 
 data Value variable =
     VConst Const
-  | VClosure variable (Environment variable -> Value variable) (Environment variable)
+  | VClosure (Value variable -> Environment variable) (Environment variable -> Value variable)
 type Environment variable = Map variable (Value variable)
 
 emptyEnv :: Environment variable
@@ -21,7 +21,7 @@ extendEnv :: (Ord variable) => variable -> Value variable -> Environment variabl
 extendEnv var value env = Map.insert var value env
 
 applyFunc :: (Ord v) => Value v -> Value v -> Value v
-applyFunc (VClosure v cBody cloEnv) arg = cBody (extendEnv v arg cloEnv)
+applyFunc (VClosure binder cBody) arg = cBody $ binder arg
 applyFunc _ _ = error "applying non-closure"
 
 evalExp :: (Ord variable) => Exp variable -> Environment variable -> Value variable
@@ -31,7 +31,7 @@ evalExp exp =
     EVar var -> lookupEnv var
     ELambda var body ->
       let cBody = evalExp body in
-      \env -> VClosure var cBody env
+      \env -> VClosure (\value -> extendEnv var value env) cBody
     EApply e1 e2 ->
       let (c1, c2) = (evalExp e1, evalExp e2)
       in \env -> applyFunc (c1 env) (c2 env)
