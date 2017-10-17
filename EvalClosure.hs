@@ -9,22 +9,22 @@ import qualified Data.Map as Map
 data Value =
     VConst Const
   | VClosure (Value -> Value)
-type Environment variable = Map variable Value
+type Environment = Map Variable Value
 
-emptyEnv :: Environment variable
+emptyEnv :: Environment
 emptyEnv = Map.empty
 
-lookupEnv :: (Ord variable) => variable -> Environment variable -> Value
+lookupEnv :: Variable -> Environment -> Value
 lookupEnv var env = env Map.! var
 
-extendEnv :: (Ord variable) => variable -> Value -> Environment variable -> Environment variable
+extendEnv :: Variable -> Value -> Environment -> Environment
 extendEnv var value env = Map.insert var value env
 
 applyFunc :: Value -> Value -> Value
 applyFunc (VClosure f) arg = f arg
 applyFunc _ _ = error "applying non-closure"
 
-evalExp :: (Ord variable) => Exp variable -> Environment variable -> Value
+evalExp :: Exp -> Environment -> Value
 evalExp exp =
   case exp of
     EConst c -> const $ VConst c

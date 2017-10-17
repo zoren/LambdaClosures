@@ -5,8 +5,10 @@ data Const =
   | CString String
   deriving (Show, Eq)
 
-data Exp variable =
+type Variable = String
+
+data Exp =
   EConst Const
-  | EVar variable
-  | ELambda variable (Exp variable)
-  | EApply (Exp variable) (Exp variable)
+  | EVar Variable
+  | ELambda Variable Exp
+  | EApply Exp Exp
