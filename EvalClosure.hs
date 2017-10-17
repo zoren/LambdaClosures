@@ -6,25 +6,25 @@ import Data.Maybe
 import Data.Map (Map)
 import qualified Data.Map as Map
 
-data Value variable =
+data Value =
     VConst Const
-  | VClosure (Value variable -> Value variable)
-type Environment variable = Map variable (Value variable)
+  | VClosure (Value -> Value)
+type Environment variable = Map variable Value
 
 emptyEnv :: Environment variable
 emptyEnv = Map.empty
 
-lookupEnv :: (Ord variable) => variable -> Environment variable -> Value variable
+lookupEnv :: (Ord variable) => variable -> Environment variable -> Value
 lookupEnv var env = env Map.! var
 
-extendEnv :: (Ord variable) => variable -> Value variable -> Environment variable -> Environment variable
+extendEnv :: (Ord variable) => variable -> Value -> Environment variable -> Environment variable
 extendEnv var value env = Map.insert var value env
 
-applyFunc :: (Ord v) => Value v -> Value v -> Value v
+applyFunc :: Value -> Value -> Value
 applyFunc (VClosure f) arg = f arg
 applyFunc _ _ = error "applying non-closure"
 
-evalExp :: (Ord variable) => Exp variable -> Environment variable -> Value variable
+evalExp :: (Ord variable) => Exp variable -> Environment variable -> Value
 evalExp exp =
   case exp of
     EConst c -> const $ VConst c
